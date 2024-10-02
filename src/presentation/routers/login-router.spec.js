@@ -3,16 +3,37 @@ const { StatusCodes } = require('http-status-codes')
 class LoginRouter {
   route (httpRequest) {
     if (!httpRequest || !httpRequest.body) {
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR
-      }
+      return HttpResponse.internalServerError()
     }
-    const { email, password } = httpRequest
-    if (!email || !password) {
-      return {
-        statusCode: StatusCodes.BAD_REQUEST
-      }
+    const { email, password } = httpRequest.body
+    if (!email) {
+      return HttpResponse.badRequest('email')
     }
+    if (!password) {
+      return HttpResponse.badRequest('password')
+    }
+  }
+}
+
+class HttpResponse {
+  static badRequest (paramName) {
+    return {
+      statusCode: StatusCodes.BAD_REQUEST,
+      body: new MissingParamError(paramName)
+    }
+  }
+
+  static internalServerError () {
+    return {
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR
+    }
+  }
+}
+
+class MissingParamError extends Error {
+  constructor (paramName) {
+    super(`Missing param: ${paramName}`)
+    this.name = 'MissingParamError'
   }
 }
 
@@ -26,6 +47,7 @@ describe('Login Router', () => {
     }
     const httpResponse = sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(StatusCodes.BAD_REQUEST)
+    expect(httpResponse.body).toEqual(new MissingParamError('email'))
   })
 
   test('Should return 400 (BAD_REQUEST) if no password is provided', () => {
@@ -37,6 +59,7 @@ describe('Login Router', () => {
     }
     const httpResponse = sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(StatusCodes.BAD_REQUEST)
+    expect(httpResponse.body).toEqual(new MissingParamError('password'))
   })
 
   test('Should return 500 (INTERNAL_SERVER_ERROR) if no httpRequest is provided', () => {
