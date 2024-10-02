@@ -4,14 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky"
+  },
+  "standard": {
+    "env": [
+      "jest"
+    ]
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.13",
     "husky": "^9.1.6",
     "jest": "^29.7.0",
     "lint-staged": "^15.2.10",
     "standard": "^17.1.2"
+  },
+  "dependencies": {
+    "@types/http-status-codes": "^1.2.0",
+    "http-status-codes": "^2.3.0"
   }
 }
