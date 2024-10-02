@@ -1,4 +1,3 @@
 export function test() {
-  ;
-  return 'd';
+  return {a:1};
 };
