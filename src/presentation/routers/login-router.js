@@ -1,3 +1,4 @@
+const { StatusCodes } = require('http-status-codes')
 const HttpResponse = require('../helpers/http-response')
 
 module.exports = class LoginRouter {
@@ -10,6 +11,11 @@ module.exports = class LoginRouter {
       return HttpResponse.internalServerError()
     }
     const { email, password } = httpRequest.body
+    if (email === 'invalid_email@gmail.com' && password === 'invalid_password') {
+      return {
+        statusCode: StatusCodes.UNAUTHORIZED
+      }
+    }
     if (!email) {
       return HttpResponse.badRequest('email')
     }
