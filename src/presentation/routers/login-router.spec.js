@@ -1,41 +1,6 @@
 const { StatusCodes } = require('http-status-codes')
-
-class LoginRouter {
-  route (httpRequest) {
-    if (!httpRequest || !httpRequest.body) {
-      return HttpResponse.internalServerError()
-    }
-    const { email, password } = httpRequest.body
-    if (!email) {
-      return HttpResponse.badRequest('email')
-    }
-    if (!password) {
-      return HttpResponse.badRequest('password')
-    }
-  }
-}
-
-class HttpResponse {
-  static badRequest (paramName) {
-    return {
-      statusCode: StatusCodes.BAD_REQUEST,
-      body: new MissingParamError(paramName)
-    }
-  }
-
-  static internalServerError () {
-    return {
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR
-    }
-  }
-}
-
-class MissingParamError extends Error {
-  constructor (paramName) {
-    super(`Missing param: ${paramName}`)
-    this.name = 'MissingParamError'
-  }
-}
+const LoginRouter = require('./login-router')
+const MissingParamError = require('../helpers/missing-param-error')
 
 describe('Login Router', () => {
   test('Should return 400 (BAD_REQUEST) if no email is provided', () => {
