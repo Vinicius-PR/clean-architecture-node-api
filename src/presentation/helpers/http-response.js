@@ -22,4 +22,10 @@ module.exports = class HttpResponse {
       body: new UnauthorizedError()
     }
   }
+
+  static OkRequest () {
+    return {
+      statusCode: StatusCodes.OK
+    }
+  }
 }
