@@ -6,14 +6,7 @@ const ServerError = require('../helpers/server-error')
 const InvalidParamError = require('../helpers/invalid-param-error')
 
 const makeSut = () => {
-  class AuthUseCaseSpy {
-    async auth (email, password) {
-      this.email = email
-      this.password = password
-      return this.accessToken
-    }
-  }
-  const authUseCaseSpy = new AuthUseCaseSpy()
+  const authUseCaseSpy = makeAuthUseCase()
   const emailValidatorSpy = makeEmailValidator()
   authUseCaseSpy.accessToken = 'valid_token'
   const sut = new LoginRouter(authUseCaseSpy, emailValidatorSpy)
@@ -32,6 +25,18 @@ const makeEmailValidator = () => {
   emailValidatorSpy.isEmailValid = true
 
   return emailValidatorSpy
+}
+
+const makeAuthUseCase = () => {
+  class AuthUseCaseSpy {
+    async auth (email, password) {
+      this.email = email
+      this.password = password
+      return this.accessToken
+    }
+  }
+
+  return new AuthUseCaseSpy()
 }
 
 const makeAuthUseCaseWithError = () => {
@@ -179,5 +184,36 @@ describe('Login Router', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(StatusCodes.BAD_REQUEST)
     expect(httpResponse.body).toEqual(new InvalidParamError('email'))
+  })
+
+  test('Should return 500 (INTERNAL_SERVER_ERROR) if no EmailValidator is provided', async () => {
+    const authUseCaseSpy = makeAuthUseCase()
+    const sut = new LoginRouter(authUseCaseSpy)
+    const httpRequest = {
+      body: {
+        email: 'any_email@gmail.com',
+        password: 'any_password'
+      }
+    }
+
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
+    expect(httpResponse.body).toEqual(new ServerError())
+  })
+
+  test('Should return 500 (INTERNAL_SERVER_ERROR) if no EmailValidator has no isValid method', async () => {
+    const authUseCaseSpy = makeAuthUseCase()
+    class EmailValidatorSpy {}
+    const sut = new LoginRouter(authUseCaseSpy, EmailValidatorSpy)
+    const httpRequest = {
+      body: {
+        email: 'any_email@gmail.com',
+        password: 'any_password'
+      }
+    }
+
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
+    expect(httpResponse.body).toEqual(new ServerError())
   })
 })
