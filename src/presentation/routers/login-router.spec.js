@@ -48,6 +48,15 @@ const makeAuthUseCaseWithError = () => {
   return new AuthUseCaseSpy()
 }
 
+const makeEmailValidatorWithError = () => {
+  class EmailValidatorSpy {
+    isValid (email) {
+      throw new Error()
+    }
+  }
+  return new EmailValidatorSpy()
+}
+
 describe('Login Router', () => {
   test('Should return 400 (BAD_REQUEST) if no email is provided', async () => {
     const { sut } = makeSut()
@@ -157,7 +166,7 @@ describe('Login Router', () => {
     expect(httpResponse.body).toEqual(new ServerError())
   })
 
-  test('Should return 500 (INTERNAL_SERVER_ERROR) if no AuthUseCase throws', async () => {
+  test('Should return 500 (INTERNAL_SERVER_ERROR) if AuthUseCase throws', async () => {
     const AuthUseCaseError = makeAuthUseCaseWithError()
     const sut = new LoginRouter(AuthUseCaseError)
 
@@ -215,5 +224,21 @@ describe('Login Router', () => {
     const httpResponse = await sut.route(httpRequest)
     expect(httpResponse.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
     expect(httpResponse.body).toEqual(new ServerError())
+  })
+
+  test('Should return 500 (INTERNAL_SERVER_ERROR) if EmailValidator throws', async () => {
+    const authUseCaseSpy = makeAuthUseCase()
+    const emailValidatorSpy = makeEmailValidatorWithError()
+    const sut = new LoginRouter(authUseCaseSpy, emailValidatorSpy)
+
+    const httpRequest = {
+      body: {
+        email: 'any_email@gmail.com',
+        password: 'any_password'
+      }
+    }
+
+    const httpResponse = await sut.route(httpRequest)
+    expect(httpResponse.statusCode).toBe(StatusCodes.INTERNAL_SERVER_ERROR)
   })
 })
