@@ -1,6 +1,7 @@
 const { StatusCodes } = require('http-status-codes')
 const MissingParamError = require('./missing-param-error')
 const UnauthorizedError = require('./unauthorized-error')
+const ServerError = require('./server-error')
 
 module.exports = class HttpResponse {
   static badRequest (paramName) {
@@ -12,7 +13,8 @@ module.exports = class HttpResponse {
 
   static internalServerError () {
     return {
-      statusCode: StatusCodes.INTERNAL_SERVER_ERROR
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: new ServerError()
     }
   }
 
